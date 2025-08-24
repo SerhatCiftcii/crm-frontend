@@ -15,6 +15,7 @@ export interface RegisterRequest {
   phoneNumber?: string;
 }
 
+
 export interface RegisterResponse {
   message: string;
 }

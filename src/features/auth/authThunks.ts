@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { authService } from '../../services/authService';
 import type { LoginRequest, LoginResponse } from '../../types/auth';
+import type { RegisterRequest, RegisterResponse } from '../../types/auth';
 
 export const loginUser = createAsyncThunk<LoginResponse, LoginRequest>(
   'auth/login',
@@ -10,6 +11,16 @@ export const loginUser = createAsyncThunk<LoginResponse, LoginRequest>(
       // Token'ı localStorage'a kaydet
       localStorage.setItem('token', res.token);
       return res;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+export const registerUser = createAsyncThunk<RegisterResponse, RegisterRequest>(
+  'auth/register',
+  async (data, thunkAPI) => {
+    try {
+      return await authService.register(data);
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }

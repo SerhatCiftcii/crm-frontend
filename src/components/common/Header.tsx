@@ -11,19 +11,21 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
-import InventoryIcon from '@mui/icons-material/Inventory'; // Products için ikon
+import InventoryIcon from '@mui/icons-material/Inventory';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import LogoutButton from './LogoutButton';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
+import { useAppSelector } from '../../app/hooks';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
+
+  const { roles } = useAppSelector((s) => s.auth);
+  const canSeeAdmins = roles.includes('Admin') || roles.includes('SuperAdmin');
 
   return (
     <>
@@ -85,7 +87,6 @@ const Header: React.FC = () => {
               color="inherit"
               startIcon={<DashboardIcon />}
               onClick={() => navigate('/dashboard')}
-              size="medium"
               sx={{ textTransform: 'none', px: 1 }}
             >
               Dashboard
@@ -95,7 +96,6 @@ const Header: React.FC = () => {
               color="inherit"
               startIcon={<PeopleIcon />}
               onClick={() => navigate('/customers')}
-              size="medium"
               sx={{ textTransform: 'none', px: 1 }}
             >
               Customers
@@ -105,11 +105,21 @@ const Header: React.FC = () => {
               color="inherit"
               startIcon={<InventoryIcon />}
               onClick={() => navigate('/products')}
-              size="medium"
               sx={{ textTransform: 'none', px: 1 }}
             >
               Products
             </Button>
+
+            {canSeeAdmins && (
+              <Button
+                color="inherit"
+                startIcon={<AdminPanelSettingsIcon />}
+                onClick={() => navigate('/admins')}
+                sx={{ textTransform: 'none', px: 1 }}
+              >
+                Admins
+              </Button>
+            )}
           </Box>
 
           {/* Spacer */}
@@ -141,30 +151,21 @@ const Header: React.FC = () => {
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-              <MenuItem
-                onClick={() => {
-                  navigate('/dashboard');
-                  handleClose();
-                }}
-              >
+              <MenuItem onClick={() => { navigate('/dashboard'); handleClose(); }}>
                 <DashboardIcon sx={{ mr: 1 }} /> Dashboard
               </MenuItem>
 
-              <MenuItem
-                onClick={() => {
-                  navigate('/customers');
-                  handleClose();
-                }}
-              >
+              {canSeeAdmins && (
+                <MenuItem onClick={() => { navigate('/admins'); handleClose(); }}>
+                  <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Admins
+                </MenuItem>
+              )}
+
+              <MenuItem onClick={() => { navigate('/customers'); handleClose(); }}>
                 <PeopleIcon sx={{ mr: 1 }} /> Customers
               </MenuItem>
 
-              <MenuItem
-                onClick={() => {
-                  navigate('/products');
-                  handleClose();
-                }}
-              >
+              <MenuItem onClick={() => { navigate('/products'); handleClose(); }}>
                 <InventoryIcon sx={{ mr: 1 }} /> Products
               </MenuItem>
 

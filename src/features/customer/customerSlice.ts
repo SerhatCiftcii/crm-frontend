@@ -105,11 +105,11 @@ const customerSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateCustomer.fulfilled, (state, action) => {
+      .addCase(updateCustomer.fulfilled, (state) => {
         state.loading = false;
         // Güncelleme işleminden sonra veriyi tekrar çekmek en güvenli yöntem
         // veya state'i manuel güncellemek
-        // Ben burada daha güvenli bir yöntem olan veriyi yeniden çekmeyi öneriyorum.
+        
       })
       .addCase(updateCustomer.rejected, (state, action) => {
         state.loading = false;

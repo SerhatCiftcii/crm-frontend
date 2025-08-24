@@ -17,10 +17,15 @@ import AddProduct from './pages/products/AddProduct';
 import EditProduct from './pages/products/EditProduct';
 import ProductDetails from './pages/products/ProductDetails';
 
+// Admin pages
+import AdminList from './pages/admin/AdminList';
+import AddAdmin from './pages/admin/AddAdmin';
+import RegisterPage from './pages/auth/RegisterPage';
+
 import { Box } from '@mui/material';
 
 const App: React.FC = () => {
-  const { token } = useAppSelector((state) => state.auth);
+  const { token, isSuperAdmin } = useAppSelector((state) => state.auth);
   const isAuthenticated = !!token;
 
   return (
@@ -81,12 +86,31 @@ const App: React.FC = () => {
             element={isAuthenticated ? <ProductDetails /> : <Navigate to="/login" />}
           />
 
+          {/* Admin pages */}
+          <Route
+            path="/admins"
+            element={isAuthenticated ? <AdminList /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admins/add"
+            element={
+              isAuthenticated
+                ? isSuperAdmin
+                  ? <AddAdmin />
+                  : <Navigate to="/admins" />
+                : <Navigate to="/login" />
+            }
+          />
+
           {/* Catch-all */}
           <Route
             path="*"
             element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} />}
           />
+
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
+
       </Box>
     </Box>
   );
