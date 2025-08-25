@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import {
   AppBar,
@@ -7,16 +9,20 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import LogoutButton from './LogoutButton';
-import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import { useAppSelector } from '../../app/hooks';
+import SupportIcon from '@mui/icons-material/Support';
+import EngineeringIcon from '@mui/icons-material/Engineering';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -31,7 +37,9 @@ const Header: React.FC = () => {
   // Yetki kontrolleri
   const canSeeAdmins = roles.includes('Admin') || roles.includes('SuperAdmin');
   const canSeeAuthorizedPersons =
-    roles.includes('Admin') || roles.includes('SuperAdmin') || roles.includes('Manager');
+    roles.includes('Admin') ||
+    roles.includes('SuperAdmin') ||
+    roles.includes('Manager');
 
   return (
     <>
@@ -95,38 +103,42 @@ const Header: React.FC = () => {
               onClick={() => navigate('/dashboard')}
               sx={{ textTransform: 'none', px: 1 }}
             >
-              Dashboard
+              Yönetim Paneli
             </Button>
-
             <Button
               color="inherit"
               startIcon={<PeopleIcon />}
               onClick={() => navigate('/customers')}
               sx={{ textTransform: 'none', px: 1 }}
             >
-              Customers
+              Müşteriler
             </Button>
-
             <Button
               color="inherit"
               startIcon={<InventoryIcon />}
               onClick={() => navigate('/products')}
               sx={{ textTransform: 'none', px: 1 }}
             >
-              Products
+              Ürünler
             </Button>
-
+            <Button
+              color="inherit"
+              startIcon={<SupportIcon />}
+              onClick={() => navigate('/maintenances')}
+              sx={{ textTransform: 'none', px: 1 }}
+            >
+              Bakım Anlaşmaları
+            </Button>
             {canSeeAuthorizedPersons && (
               <Button
                 color="inherit"
-                startIcon={<PeopleIcon />}
+                startIcon={<EngineeringIcon />}
                 onClick={() => navigate('/authorized-persons')}
                 sx={{ textTransform: 'none', px: 1 }}
               >
-                Authorized Persons
+                Yetkililer
               </Button>
             )}
-
             {canSeeAdmins && (
               <Button
                 color="inherit"
@@ -134,7 +146,7 @@ const Header: React.FC = () => {
                 onClick={() => navigate('/admins')}
                 sx={{ textTransform: 'none', px: 1 }}
               >
-                Admins
+                Yönetici Paneli
               </Button>
             )}
           </Box>
@@ -159,7 +171,6 @@ const Header: React.FC = () => {
             >
               <MenuIcon />
             </IconButton>
-
             <Menu
               id="header-menu"
               anchorEl={anchorEl}
@@ -174,27 +185,44 @@ const Header: React.FC = () => {
                   handleClose();
                 }}
               >
-                <DashboardIcon sx={{ mr: 1 }} /> Dashboard
+                <ListItemIcon>
+                  <DashboardIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Yönetim Paneli</ListItemText>
               </MenuItem>
-
               <MenuItem
                 onClick={() => {
                   navigate('/customers');
                   handleClose();
                 }}
               >
-                <PeopleIcon sx={{ mr: 1 }} /> Customers
+                <ListItemIcon>
+                  <PeopleIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Müşteriler</ListItemText>
               </MenuItem>
-
               <MenuItem
                 onClick={() => {
                   navigate('/products');
                   handleClose();
                 }}
               >
-                <InventoryIcon sx={{ mr: 1 }} /> Products
+                <ListItemIcon>
+                  <InventoryIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Ürünler</ListItemText>
               </MenuItem>
-
+              <MenuItem
+                onClick={() => {
+                  navigate('/maintenances');
+                  handleClose();
+                }}
+              >
+                <ListItemIcon>
+                  <SupportIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Bakım Anlaşmaları</ListItemText>
+              </MenuItem>
               {canSeeAuthorizedPersons && (
                 <MenuItem
                   onClick={() => {
@@ -202,10 +230,12 @@ const Header: React.FC = () => {
                     handleClose();
                   }}
                 >
-                  <PeopleIcon sx={{ mr: 1 }} /> Authorized Persons
+                  <ListItemIcon>
+                    <EngineeringIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Yetkililer</ListItemText>
                 </MenuItem>
               )}
-
               {canSeeAdmins && (
                 <MenuItem
                   onClick={() => {
@@ -213,12 +243,20 @@ const Header: React.FC = () => {
                     handleClose();
                   }}
                 >
-                  <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Admins
+                  <ListItemIcon>
+                    <AdminPanelSettingsIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Yönetici Paneli</ListItemText>
                 </MenuItem>
               )}
-
               <MenuItem onClick={handleClose}>
-                <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
                   <LogoutButton />
                 </Box>
               </MenuItem>
@@ -226,8 +264,6 @@ const Header: React.FC = () => {
           </Box>
         </Toolbar>
       </AppBar>
-
-      {/* Header yüksekliği kadar boşluk */}
       <Toolbar />
     </>
   );

@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAppSelector } from './app/hooks';
@@ -21,16 +23,20 @@ import ProductDetails from './pages/products/ProductDetails';
 import AdminList from './pages/admin/AdminList';
 import AddAdmin from './pages/admin/AddAdmin';
 import RegisterPage from './pages/auth/RegisterPage';
-//
 
-
+// Authorized Person pages
 import AuthorizedPersonDetails from './pages/AuthorizedPerson/AuthorizedPersonDetails';
 import EditAuthorizedPerson from './pages/AuthorizedPerson/EditAuthorizedPerson';
-// import AuthorizedPersonDetails from './pages/authorizedperson/AuthorizedPersonDetails';
-
-import { Box } from '@mui/material';
 import AuthorizedPersonList from './pages/AuthorizedPerson/AuthorizedPersonList';
 import AddAuthorizedPerson from './pages/AuthorizedPerson/AddAuthorizedPerson';
+
+// Maintenance pages
+import MaintenanceList from './pages/maintenances/MaintenanceList';
+import AddMaintenance from './pages/maintenances/AddMaintenance';
+import EditMaintenance from './pages/maintenances/EditMaintenance';
+import MaintenanceDetail from './pages/maintenances/MaintenanceDetail';
+
+import { Box } from '@mui/material';
 
 
 const App: React.FC = () => {
@@ -52,6 +58,7 @@ const App: React.FC = () => {
         <Routes>
           {/* Auth */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
           {/* Dashboard */}
           <Route
@@ -94,8 +101,9 @@ const App: React.FC = () => {
             path="/products/details/:id"
             element={isAuthenticated ? <ProductDetails /> : <Navigate to="/login" />}
           />
-          {/*yetkilier  */}
-              <Route
+
+          {/* Authorized Persons pages */}
+          <Route
             path="/authorized-persons"
             element={isAuthenticated ? <AuthorizedPersonList /> : <Navigate to="/login" />}
           />
@@ -107,7 +115,28 @@ const App: React.FC = () => {
             path="/authorized-persons/edit/:id"
             element={isAuthenticated ? <EditAuthorizedPerson /> : <Navigate to="/login" />}
           />
-         <Route path="/authorized-persons/details/:id" element={<AuthorizedPersonDetails />} />
+          <Route
+            path="/authorized-persons/details/:id"
+            element={isAuthenticated ? <AuthorizedPersonDetails /> : <Navigate to="/login" />}
+          />
+
+          {/* Maintenance pages */}
+          <Route
+            path="/maintenances"
+            element={isAuthenticated ? <MaintenanceList /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/maintenances/add"
+            element={isAuthenticated ? <AddMaintenance /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/maintenances/edit/:id"
+            element={isAuthenticated ? <EditMaintenance /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/maintenances/:id"
+            element={isAuthenticated ? <MaintenanceDetail /> : <Navigate to="/login" />}
+          />
 
           {/* Admin pages */}
           <Route
@@ -130,10 +159,7 @@ const App: React.FC = () => {
             path="*"
             element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} />}
           />
-
-          <Route path="/register" element={<RegisterPage />} />
         </Routes>
-
       </Box>
     </Box>
   );
