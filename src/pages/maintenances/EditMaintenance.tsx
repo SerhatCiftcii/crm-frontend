@@ -11,15 +11,17 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Checkbox,
+  Chip,
+  ListItemText,
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { updateMaintenance, fetchMaintenances } from '../../features/maintenance/maintenanceSlice';
 import { fetchCustomers } from '../../features/customer/customerSlice';
 import { fetchProducts } from '../../features/product/productSlice';
 import type { UpdateMaintenanceDto } from '../../types/maintenance';
-import { Checkbox, Chip, ListItemText } from '@mui/material';
 
-// Enum değerlerini ve display name'lerini eşleyen objeler
+// Enum değerleri ve display name
 const offerStatusOptions: { [key: number]: string } = {
   0: 'Hazırlanmadı',
   1: 'Hazırlandı',
@@ -49,6 +51,30 @@ const firmSituationOptions: { [key: number]: string } = {
   3: 'İptal Edildi',
 };
 
+// Chip renkleri
+const chipColorMap: Record<string | number, "default" | "success" | "warning" | "error" | "info"> = {
+  0: "default",
+  1: "info",
+  2: "success",
+  3: "warning",
+  4: "error",
+  "Hazırlanmadı": "default",
+  "Hazırlandı": "info",
+  "Gönderildi": "warning",
+  "Onaylandı": "success",
+  "Reddedildi": "error",
+  "Gönderilmedi": "default",
+  "İmzalandı": "success",
+  "İptal Edildi": "error",
+  "Aktif": "success",
+  "Pasif": "default",
+  "Bekliyor": "warning",
+  "Süresi Doldu": "error",
+  "Devam Ediyor": "info",
+  "Durduruldu": "warning",
+  "Tamamlandı": "success",
+};
+
 const EditMaintenance: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const maintenanceId = id ? parseInt(id) : null;
@@ -73,16 +99,16 @@ const EditMaintenance: React.FC = () => {
       if (maintenance) {
         setFormData({
           ...maintenance,
-          // Durum kodlarını sayısal değere dönüştürerek formData'ya atama
           offerStatus: parseInt(Object.keys(offerStatusOptions).find((key: any) => offerStatusOptions[key] === maintenance.offerStatus) || '0'),
           contractStatus: parseInt(Object.keys(contractStatusOptions).find((key: any) => contractStatusOptions[key] === maintenance.contractStatus) || '0'),
           licenseStatus: parseInt(Object.keys(licenseStatusOptions).find((key: any) => licenseStatusOptions[key] === maintenance.licenseStatus) || '0'),
           firmSituation: parseInt(Object.keys(firmSituationOptions).find((key: any) => firmSituationOptions[key] === maintenance.firmSituation) || '0'),
-          // PASAPORT TARİHİ İÇİN DÜZELTME YAPILDI: Tarih formatı uyarıları için split kullanıldı.
           passportCreatedDate: maintenance.passportCreatedDate?.split('T')[0] || '',
           startDate: maintenance.startDate.split('T')[0],
           endDate: maintenance.endDate.split('T')[0],
-          productIds: maintenance.products.map(p => p.id) // Eksik olan productIds alanını ekledik
+          productIds: maintenance.products.map(p => p.id),
+          extendBy6Months: maintenance.extendBy6Months || false,
+          extendBy1Year: maintenance.extendBy1Year || false,
         });
       }
     }
@@ -99,11 +125,21 @@ const EditMaintenance: React.FC = () => {
   };
 
   const handleProductChange = (event: any) => {
-    const {
-      target: { value },
-    } = event;
+    const { target: { value } } = event;
     setFormData((prev) =>
       prev ? { ...prev, productIds: typeof value === 'string' ? value.split(',').map(Number) : value } : null
+    );
+  };
+
+  const handleExtendChange = (type: '6Months' | '1Year') => {
+    setFormData((prev) =>
+      prev
+        ? {
+            ...prev,
+            extendBy6Months: type === '6Months' ? !prev.extendBy6Months : false,
+            extendBy1Year: type === '1Year' ? !prev.extendBy1Year : false,
+          }
+        : null
     );
   };
 
@@ -113,19 +149,13 @@ const EditMaintenance: React.FC = () => {
     if (formData.startDate && formData.endDate) {
       const startDate = new Date(formData.startDate);
       const endDate = new Date(formData.endDate);
-      if (endDate <= startDate) {
-        errors.endDate = "Bitiş Tarihi, başlangıç tarihinden sonra olmalıdır.";
-      }
+      if (endDate <= startDate) errors.endDate = "Bitiş Tarihi, başlangıç tarihinden sonra olmalıdır.";
     }
     if (formData.passportCreatedDate) {
       const passportDate = new Date(formData.passportCreatedDate);
-      if (passportDate > new Date()) {
-        errors.passportCreatedDate = "Pasaport oluşturma tarihi gelecekte olamaz.";
-      }
+      if (passportDate > new Date()) errors.passportCreatedDate = "Pasaport oluşturma tarihi gelecekte olamaz.";
     }
-    if (formData.description && formData.description.length > 300) {
-      errors.description = "Açıklama en fazla 300 karakter olabilir.";
-    }
+    if (formData.description && formData.description.length > 300) errors.description = "Açıklama en fazla 300 karakter olabilir.";
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -133,8 +163,7 @@ const EditMaintenance: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData || !validate()) return;
-    
-    // Hata düzeltmesi: passportCreatedDate değeri boşsa undefined olarak gönderilir.
+
     const payload: UpdateMaintenanceDto = {
       ...formData,
       passportCreatedDate: formData.passportCreatedDate || undefined,
@@ -153,14 +182,13 @@ const EditMaintenance: React.FC = () => {
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       <form onSubmit={handleSubmit}>
+        {/* Müşteri ve Konu Alanları */}
         <FormControl fullWidth margin="normal" required>
           <InputLabel>Müşteri</InputLabel>
           <Select name="customerId" value={formData.customerId} onChange={handleSelectChange}>
             <MenuItem value={0}><em>Seçiniz</em></MenuItem>
             {customers.map((customer) => (
-              <MenuItem key={customer.id} value={customer.id}>
-                {customer.companyName}
-              </MenuItem>
+              <MenuItem key={customer.id} value={customer.id}>{customer.companyName}</MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -216,42 +244,52 @@ const EditMaintenance: React.FC = () => {
           helperText={validationErrors.passportCreatedDate}
         />
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Teklif Durumu</InputLabel>
-          <Select name="offerStatus" value={formData.offerStatus} onChange={handleSelectChange}>
-            {Object.entries(offerStatusOptions).map(([val, label]) => (
-              <MenuItem key={val} value={parseInt(val)}>{label}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {/* Durum Seçimleri */}
+        {['offerStatus','contractStatus','licenseStatus','firmSituation'].map((field) => (
+          <FormControl fullWidth margin="normal" key={field}>
+            <InputLabel>{field.replace(/Status|Situation/g,' Durumu')}</InputLabel>
+            <Select
+              name={field}
+              value={formData[field as keyof typeof formData] as number}
+              onChange={handleSelectChange}
+            >
+              {(() => {
+                const optionsMap: any = {
+                  offerStatus: offerStatusOptions,
+                  contractStatus: contractStatusOptions,
+                  licenseStatus: licenseStatusOptions,
+                  firmSituation: firmSituationOptions,
+                };
+                return Object.entries(optionsMap[field]).map(([val, label]) => (
+                  <MenuItem key={val} value={parseInt(val)}>
+                    <Chip label={label as string} size="small" color={chipColorMap[label as string] || 'default'} />
+                  </MenuItem>
+                ));
+              })()}
+            </Select>
+          </FormControl>
+        ))}
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Sözleşme Durumu</InputLabel>
-          <Select name="contractStatus" value={formData.contractStatus} onChange={handleSelectChange}>
-            {Object.entries(contractStatusOptions).map(([val, label]) => (
-              <MenuItem key={val} value={parseInt(val)}>{label}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {/* Uzama Seçimleri */}
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>Uzama</Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Chip
+              label="6 Ay"
+              clickable
+              color={formData.extendBy6Months ? 'info' : 'default'}
+              onClick={() => handleExtendChange('6Months')}
+            />
+            <Chip
+              label="1 Yıl"
+              clickable
+              color={formData.extendBy1Year ? 'success' : 'default'}
+              onClick={() => handleExtendChange('1Year')}
+            />
+          </Box>
+        </Box>
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Lisans Durumu</InputLabel>
-          <Select name="licenseStatus" value={formData.licenseStatus} onChange={handleSelectChange}>
-            {Object.entries(licenseStatusOptions).map(([val, label]) => (
-              <MenuItem key={val} value={parseInt(val)}>{label}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Firma Durumu</InputLabel>
-          <Select name="firmSituation" value={formData.firmSituation} onChange={handleSelectChange}>
-            {Object.entries(firmSituationOptions).map(([val, label]) => (
-              <MenuItem key={val} value={parseInt(val)}>{label}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
+        {/* Ürün Seçimi */}
         <FormControl fullWidth margin="normal">
           <InputLabel id="products-label">Ürünler</InputLabel>
           <Select

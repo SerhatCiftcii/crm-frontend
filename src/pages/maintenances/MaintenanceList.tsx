@@ -114,20 +114,19 @@ const MaintenanceList: React.FC = () => {
       ) : (
         <Paper elevation={4} sx={{ width: '100%' }}>
           <TableContainer sx={{ maxHeight: '70vh' }}>
-            <Table stickyHeader sx={{ minWidth: 1000 }}>
+            <Table stickyHeader sx={{ minWidth: 1100 }}>
               <TableHead>
                 <TableRow sx={{ bgcolor: 'primary.light' }}>
                   <TableCell sx={{ fontWeight: 'bold' }}>Müşteri</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Konu</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Başlangıç Tarihi</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Bitiş Tarihi</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Uzama</TableCell> {/* Yeni sütun */}
                   <TableCell sx={{ fontWeight: 'bold' }}>Teklif Durumu</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Sözleşme Durumu</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Lisans Durumu</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Firma Durumu</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
-                    İşlemler
-                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>İşlemler</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -143,6 +142,16 @@ const MaintenanceList: React.FC = () => {
                       <TableCell>{maintenance.subject || getCustomerNameById(maintenance.customerId)}</TableCell>
                       <TableCell>{maintenance.startDate?.split('T')[0] || '-'}</TableCell>
                       <TableCell>{maintenance.endDate?.split('T')[0] || '-'}</TableCell>
+
+                      {/* Uzama sütunu */}
+                      <TableCell>
+                        <Chip
+                          label={maintenance.extendBy6Months ? '6 Ay' : maintenance.extendBy1Year ? '1 Yıl' : '-'}
+                          size="small"
+                          color={maintenance.extendBy6Months ? 'info' : maintenance.extendBy1Year ? 'success' : 'default'}
+                        />
+                      </TableCell>
+
                       <TableCell>
                         <Chip
                           label={maintenance.offerStatus}
