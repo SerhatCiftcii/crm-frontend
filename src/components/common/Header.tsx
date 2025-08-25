@@ -21,11 +21,17 @@ import { useAppSelector } from '../../app/hooks';
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   const { roles } = useAppSelector((s) => s.auth);
+
+  // Yetki kontrolleri
   const canSeeAdmins = roles.includes('Admin') || roles.includes('SuperAdmin');
+  const canSeeAuthorizedPersons =
+    roles.includes('Admin') || roles.includes('SuperAdmin') || roles.includes('Manager');
 
   return (
     <>
@@ -110,6 +116,17 @@ const Header: React.FC = () => {
               Products
             </Button>
 
+            {canSeeAuthorizedPersons && (
+              <Button
+                color="inherit"
+                startIcon={<PeopleIcon />}
+                onClick={() => navigate('/authorized-persons')}
+                sx={{ textTransform: 'none', px: 1 }}
+              >
+                Authorized Persons
+              </Button>
+            )}
+
             {canSeeAdmins && (
               <Button
                 color="inherit"
@@ -151,23 +168,54 @@ const Header: React.FC = () => {
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-              <MenuItem onClick={() => { navigate('/dashboard'); handleClose(); }}>
+              <MenuItem
+                onClick={() => {
+                  navigate('/dashboard');
+                  handleClose();
+                }}
+              >
                 <DashboardIcon sx={{ mr: 1 }} /> Dashboard
               </MenuItem>
 
-              {canSeeAdmins && (
-                <MenuItem onClick={() => { navigate('/admins'); handleClose(); }}>
-                  <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Admins
-                </MenuItem>
-              )}
-
-              <MenuItem onClick={() => { navigate('/customers'); handleClose(); }}>
+              <MenuItem
+                onClick={() => {
+                  navigate('/customers');
+                  handleClose();
+                }}
+              >
                 <PeopleIcon sx={{ mr: 1 }} /> Customers
               </MenuItem>
 
-              <MenuItem onClick={() => { navigate('/products'); handleClose(); }}>
+              <MenuItem
+                onClick={() => {
+                  navigate('/products');
+                  handleClose();
+                }}
+              >
                 <InventoryIcon sx={{ mr: 1 }} /> Products
               </MenuItem>
+
+              {canSeeAuthorizedPersons && (
+                <MenuItem
+                  onClick={() => {
+                    navigate('/authorized-persons');
+                    handleClose();
+                  }}
+                >
+                  <PeopleIcon sx={{ mr: 1 }} /> Authorized Persons
+                </MenuItem>
+              )}
+
+              {canSeeAdmins && (
+                <MenuItem
+                  onClick={() => {
+                    navigate('/admins');
+                    handleClose();
+                  }}
+                >
+                  <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Admins
+                </MenuItem>
+              )}
 
               <MenuItem onClick={handleClose}>
                 <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>

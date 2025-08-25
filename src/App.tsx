@@ -21,8 +21,17 @@ import ProductDetails from './pages/products/ProductDetails';
 import AdminList from './pages/admin/AdminList';
 import AddAdmin from './pages/admin/AddAdmin';
 import RegisterPage from './pages/auth/RegisterPage';
+//
+
+
+import AuthorizedPersonDetails from './pages/AuthorizedPerson/AuthorizedPersonDetails';
+import EditAuthorizedPerson from './pages/AuthorizedPerson/EditAuthorizedPerson';
+// import AuthorizedPersonDetails from './pages/authorizedperson/AuthorizedPersonDetails';
 
 import { Box } from '@mui/material';
+import AuthorizedPersonList from './pages/AuthorizedPerson/AuthorizedPersonList';
+import AddAuthorizedPerson from './pages/AuthorizedPerson/AddAuthorizedPerson';
+
 
 const App: React.FC = () => {
   const { token, isSuperAdmin } = useAppSelector((state) => state.auth);
@@ -85,6 +94,20 @@ const App: React.FC = () => {
             path="/products/details/:id"
             element={isAuthenticated ? <ProductDetails /> : <Navigate to="/login" />}
           />
+          {/*yetkilier  */}
+              <Route
+            path="/authorized-persons"
+            element={isAuthenticated ? <AuthorizedPersonList /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/authorized-persons/add"
+            element={isAuthenticated ? <AddAuthorizedPerson /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/authorized-persons/edit/:id"
+            element={isAuthenticated ? <EditAuthorizedPerson /> : <Navigate to="/login" />}
+          />
+         <Route path="/authorized-persons/details/:id" element={<AuthorizedPersonDetails />} />
 
           {/* Admin pages */}
           <Route

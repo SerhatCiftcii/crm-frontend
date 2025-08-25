@@ -50,6 +50,7 @@ const CustomerList: React.FC = () => {
 
   const handleDelete = (id: number) => {
     if (window.confirm('Müşteriyi silmek istediğinizden emin misiniz?')) {
+      // Mavi mantık: state üzerinde direkt filter ile listeden çıkar
       dispatch(deleteCustomer(id));
     }
   };
@@ -138,46 +139,48 @@ const CustomerList: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {customers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((customer, index) => (
-                  <TableRow
-                    key={customer.id}
-                    hover
-                    sx={{ bgcolor: index % 2 === 0 ? 'grey.50' : 'background.paper' }}
-                  >
-                    <TableCell>{customer.companyName}</TableCell>
-                    <TableCell>{customer.ownerName}</TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.phone}</TableCell>
-                    <TableCell>{customer.city}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={statusMap[customer.status]?.label || 'Bilinmiyor'}
-                        color={statusMap[customer.status]?.color || 'default'}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {customer.products?.map((p) => p.name).join(', ') || '-'}
-                    </TableCell>
-                    <TableCell align="center">
-                      <Tooltip title="Detaylar">
-                        <IconButton color="info" onClick={() => navigate(`/customers/${customer.id}`)}>
-                          <VisibilityIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Düzenle">
-                        <IconButton color="primary" onClick={() => handleEdit(customer.id)}>
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Sil">
-                        <IconButton color="error" onClick={() => handleDelete(customer.id)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {customers
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((customer, index) => (
+                    <TableRow
+                      key={customer.id}
+                      hover
+                      sx={{ bgcolor: index % 2 === 0 ? 'grey.50' : 'background.paper' }}
+                    >
+                      <TableCell>{customer.companyName}</TableCell>
+                      <TableCell>{customer.ownerName}</TableCell>
+                      <TableCell>{customer.email}</TableCell>
+                      <TableCell>{customer.phone}</TableCell>
+                      <TableCell>{customer.city}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={statusMap[customer.status]?.label || 'Bilinmiyor'}
+                          color={statusMap[customer.status]?.color || 'default'}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {customer.products?.map((p) => p.name).join(', ') || '-'}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Tooltip title="Detaylar">
+                          <IconButton color="info" onClick={() => navigate(`/customers/${customer.id}`)}>
+                            <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Düzenle">
+                          <IconButton color="primary" onClick={() => handleEdit(customer.id)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Sil">
+                          <IconButton color="error" onClick={() => handleDelete(customer.id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
