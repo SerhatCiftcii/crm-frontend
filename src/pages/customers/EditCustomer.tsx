@@ -21,6 +21,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Grid,
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { fetchCustomers, updateCustomer } from '../../features/customer/customerSlice';
@@ -47,7 +48,6 @@ const EditCustomer: React.FC = () => {
   const [products, setProducts] = useState<ProductDto[]>([]);
   const [formData, setFormData] = useState<UpdateCustomerDto | null>(null);
 
-  // Change log dialog
   const [logOpen, setLogOpen] = useState(false);
   const [logs, setLogs] = useState<CustomerChangeLogDto[]>([]);
 
@@ -80,7 +80,7 @@ const EditCustomer: React.FC = () => {
           taxNumber: cust.taxNumber,
           taxOffice: cust.taxOffice,
           webSite: cust.webSite,
-          salesDate: cust.salesDate, // string | null
+          salesDate: cust.salesDate,
           status: cust.status,
           productIds: cust.products?.map(p => p.id) || [],
         });
@@ -115,7 +115,6 @@ const EditCustomer: React.FC = () => {
   const handleOpenLogs = async () => {
     if (!id) return;
     try {
-      // ID'ye göre logları çekiyoruz
       const logsByCustomer = await customerService.getCustomerChangeLogsByCustomerId(Number(id));
       setLogs(logsByCustomer);
       setLogOpen(true);
@@ -131,59 +130,86 @@ const EditCustomer: React.FC = () => {
   if (!formData) return <CircularProgress />;
 
   return (
-    <Box sx={{ p: 4, maxWidth: 700, mx: 'auto' }}>
+    <Box sx={{ p: 4, maxWidth: 900, mx: 'auto' }}>
       <Typography variant="h4" mb={3}>Müşteri Düzenle</Typography>
 
       {loading && <CircularProgress />}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       <form onSubmit={handleSubmit}>
-        <TextField fullWidth margin="normal" label="Şirket Adı" name="companyName" value={formData.companyName} onChange={handleChange} required />
-        <TextField fullWidth margin="normal" label="Şube Adı" name="branchName" value={formData.branchName} onChange={handleChange} />
-        <TextField fullWidth margin="normal" label="Yetkili Adı" name="ownerName" value={formData.ownerName} onChange={handleChange} />
-        <TextField fullWidth margin="normal" label="Email" name="email" value={formData.email} onChange={handleChange} type="email" />
-        <TextField fullWidth margin="normal" label="Telefon" name="phone" value={formData.phone} onChange={handleChange} />
-        <TextField fullWidth margin="normal" label="Şehir" name="city" value={formData.city} onChange={handleChange} />
-        <TextField fullWidth margin="normal" label="İlçe" name="district" value={formData.district} onChange={handleChange} />
-        <TextField fullWidth margin="normal" label="Adres" name="address" value={formData.address} onChange={handleChange} />
-        <TextField fullWidth margin="normal" label="Vergi Numarası" name="taxNumber" value={formData.taxNumber} onChange={handleChange} />
-        <TextField fullWidth margin="normal" label="Vergi Dairesi" name="taxOffice" value={formData.taxOffice} onChange={handleChange} />
-        <TextField fullWidth margin="normal" label="Web Sitesi" name="webSite" value={formData.webSite} onChange={handleChange} />
-        <TextField fullWidth margin="normal" label="Satış Tarihi" name="salesDate" type="date" value={formData.salesDate || ''} onChange={handleChange} InputLabelProps={{ shrink: true }} />
+        <Grid container spacing={2} columns={24}>
+          <Grid size={24}>
+            <TextField fullWidth label="Şirket Adı" name="companyName" value={formData.companyName} onChange={handleChange} required />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="Şube Adı" name="branchName" value={formData.branchName} onChange={handleChange} />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="Yetkili Adı" name="ownerName" value={formData.ownerName} onChange={handleChange} />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="Email" name="email" type="email" value={formData.email} onChange={handleChange} />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="Telefon" name="phone" value={formData.phone} onChange={handleChange} />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="Şehir" name="city" value={formData.city} onChange={handleChange} />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="İlçe" name="district" value={formData.district} onChange={handleChange} />
+          </Grid>
+          <Grid size={24}>
+            <TextField fullWidth multiline minRows={2} label="Adres" name="address" value={formData.address} onChange={handleChange} />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="Vergi Numarası" name="taxNumber" value={formData.taxNumber} onChange={handleChange} />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="Vergi Dairesi" name="taxOffice" value={formData.taxOffice} onChange={handleChange} />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="Web Sitesi" name="webSite" value={formData.webSite} onChange={handleChange} />
+          </Grid>
+          <Grid size={12}>
+            <TextField fullWidth label="Satış Tarihi" name="salesDate" type="date" value={formData.salesDate || ''} onChange={handleChange} InputLabelProps={{ shrink: true }} />
+          </Grid>
+          <Grid size={12}>
+            <FormControl fullWidth>
+              <InputLabel id="status-label">Durum</InputLabel>
+              <Select labelId="status-label" name="status" value={formData.status.toString()} onChange={handleSelectChange}>
+                {Object.entries(statusOptions).map(([val, label]) => (
+                  <MenuItem key={val} value={val}>{label}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid size={12}>
+            <FormControl fullWidth>
+              <InputLabel id="product-label">Ürünler</InputLabel>
+              <Select
+                labelId="product-label"
+                multiple
+                name="productIds"
+                value={formData.productIds}
+                onChange={handleSelectChange}
+                input={<OutlinedInput label="Ürünler" />}
+              >
+                {products.map((p) => (
+                  <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="status-label">Durum</InputLabel>
-          <Select labelId="status-label" name="status" value={formData.status.toString()} onChange={handleSelectChange}>
-            {Object.entries(statusOptions).map(([val, label]) => (
-              <MenuItem key={val} value={val}>{label}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="product-label">Ürünler</InputLabel>
-          <Select
-            labelId="product-label"
-            multiple
-            name="productIds"
-            value={formData.productIds}
-            onChange={handleSelectChange}
-            input={<OutlinedInput label="Ürünler" />}
-          >
-            {products.map((p) => (
-              <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+        <Box sx={{ mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Button variant="contained" type="submit" disabled={loading}>Güncelle</Button>
           <Button variant="outlined" color="error" onClick={() => navigate('/customers')}>İptal</Button>
           <Button variant="outlined" color="info" onClick={handleOpenLogs}>Değişiklikleri Gör</Button>
         </Box>
       </form>
 
-      {/* Change log dialog */}
       <Dialog open={logOpen} onClose={handleCloseLogs} fullWidth maxWidth="sm">
         <DialogTitle>Değişiklikler</DialogTitle>
         <DialogContent dividers>

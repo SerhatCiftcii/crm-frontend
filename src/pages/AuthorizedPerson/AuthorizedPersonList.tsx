@@ -13,6 +13,7 @@ import {
   IconButton,
   Tooltip,
   TablePagination,
+  TextField,
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -34,6 +35,7 @@ const AuthorizedPersonList: React.FC = () => {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     dispatch(fetchAuthorizedPersons());
@@ -50,6 +52,22 @@ const AuthorizedPersonList: React.FC = () => {
       dispatch(deleteAuthorizedPerson(id));
     }
   };
+
+  const getCustomerName = (ap: any) =>
+    ap.customerName || customers.find((c) => c.id === ap.customerId)?.companyName || ap.customerId;
+
+  // --- Search filter ---
+  const filteredList = list.filter((ap) => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return true;
+    const match = (value?: string) => value?.toLowerCase().includes(term);
+    return (
+      match(getCustomerName(ap)) ||
+      match(ap.fullName) ||
+      match(ap.email) ||
+      match(ap.phone)
+    );
+  });
 
   if (loading)
     return (
@@ -77,7 +95,19 @@ const AuthorizedPersonList: React.FC = () => {
         </Button>
       </Box>
 
-      {list.length === 0 ? (
+      {/* Arama alanı */}
+      <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
+        <TextField
+          label="Ara..."
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Button variant="contained" onClick={() => setSearchTerm('')}>Temizle</Button>
+      </Box>
+
+      {filteredList.length === 0 ? (
         <p>Henüz yetkili kaydı bulunmamaktadır.</p>
       ) : (
         <Paper elevation={4} sx={{ width: '100%' }}>
@@ -94,38 +124,38 @@ const AuthorizedPersonList: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {list.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((ap, index) => (
-                  <TableRow
-                    key={ap.id}
-                    hover
-                    sx={{ bgcolor: index % 2 === 0 ? 'grey.50' : 'background.paper' }}
-                  >
-                    <TableCell>
-                      {ap.customerName || customers.find((c) => c.id === ap.customerId)?.companyName || ap.customerId}
-                    </TableCell>
-                    <TableCell>{ap.fullName}</TableCell>
-                    <TableCell>{ap.email}</TableCell>
-                    <TableCell>{ap.phone}</TableCell>
-                    <TableCell>{new Date(ap.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell align="center">
-                      <Tooltip title="Detaylar">
-                        <IconButton color="info" onClick={() => navigate(`/authorized-persons/details/${ap.id}`)}>
-                          <VisibilityIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Düzenle">
-                        <IconButton color="primary" onClick={() => navigate(`/authorized-persons/edit/${ap.id}`)}>
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Sil">
-                        <IconButton color="error" onClick={() => handleDelete(ap.id, ap.fullName)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredList
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((ap, index) => (
+                    <TableRow
+                      key={ap.id}
+                      hover
+                      sx={{ bgcolor: index % 2 === 0 ? 'grey.50' : 'background.paper' }}
+                    >
+                      <TableCell>{getCustomerName(ap)}</TableCell>
+                      <TableCell>{ap.fullName}</TableCell>
+                      <TableCell>{ap.email}</TableCell>
+                      <TableCell>{ap.phone}</TableCell>
+                      <TableCell>{new Date(ap.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell align="center">
+                        <Tooltip title="Detaylar">
+                          <IconButton color="info" onClick={() => navigate(`/authorized-persons/details/${ap.id}`)}>
+                            <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Düzenle">
+                          <IconButton color="primary" onClick={() => navigate(`/authorized-persons/edit/${ap.id}`)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Sil">
+                          <IconButton color="error" onClick={() => handleDelete(ap.id, ap.fullName)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -133,7 +163,7 @@ const AuthorizedPersonList: React.FC = () => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
             component="div"
-            count={list.length}
+            count={filteredList.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

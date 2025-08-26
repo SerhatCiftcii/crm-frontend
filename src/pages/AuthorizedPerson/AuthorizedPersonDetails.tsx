@@ -1,10 +1,22 @@
 // src/pages/authorizedperson/AuthorizedPersonDetails.tsx
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, CircularProgress, Alert, Paper, Divider, Button } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Paper, Divider, Button, Stack } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import { fetchAuthorizedPersons } from '../../features/authorizedPerson/authorizedPersonSlice';
 import { type AuthorizedPersonDto } from '../../types/authorizedPerson';
+
+// Detay satırı componenti
+const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <Stack direction="row" justifyContent="space-between" sx={{ py: 1 }}>
+    <Typography variant="subtitle2" color="text.secondary">
+      {label}
+    </Typography>
+    <Typography variant="body1" fontWeight="bold">
+      {value || '-'}
+    </Typography>
+  </Stack>
+);
 
 const AuthorizedPersonDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,10 +39,10 @@ const AuthorizedPersonDetails: React.FC = () => {
     }
   }, [list, id, dispatch]);
 
-  if (loading || !person) return <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 4 }} />;
+  if (loading || !person)
+    return <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 4 }} />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
-  // Şirket adı çözümü
   const companyName = person.customerName || customers.find(c => c.id === person.customerId)?.companyName || 'Belirtilmemiş';
 
   return (
@@ -38,60 +50,43 @@ const AuthorizedPersonDetails: React.FC = () => {
       <Typography variant="h4" mb={3}>Yetkili Kişi Detayları</Typography>
 
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h6">Şirket Adı</Typography>
-        <Typography mb={2}>{companyName}</Typography>
-
-        <Divider sx={{ mb: 2 }} />
-
-        <Typography variant="h6">Yetkili Adı</Typography>
-        <Typography mb={2}>{person.fullName}</Typography>
-
-        <Divider sx={{ mb: 2 }} />
-
-        <Typography variant="h6">Unvan</Typography>
-        <Typography mb={2}>{person.title}</Typography>
-
-        <Divider sx={{ mb: 2 }} />
-
-        <Typography variant="h6">Telefon</Typography>
-        <Typography mb={2}>{person.phone}</Typography>
-
-        <Divider sx={{ mb: 2 }} />
-
-        <Typography variant="h6">Email</Typography>
-        <Typography mb={2}>{person.email}</Typography>
-
-        {person.birthDate && (
-          <>
-            <Divider sx={{ mb: 2 }} />
-             <Typography variant="h6">Doğum Tarihi</Typography>
-    <Typography mb={2}>
-      {new Date(person.birthDate).toLocaleDateString('tr-TR')}
-    </Typography>
-          </>
-        )}
-
-        {person.notes && (
-          <>
-            <Divider sx={{ mb: 2 }} />
-            <Typography variant="h6">Notlar</Typography>
-            <Typography mb={2}>{person.notes}</Typography>
-          </>
-        )}
-
-      
-    
-            {person.updatedAt && new Date(person.updatedAt).getTime() !== new Date(person.createdAt).getTime() && (
-        <>
-            <Divider sx={{ mb: 2 }} />
-            <Typography variant="h6">Güncelleme Tarihi</Typography>
-            <Typography mb={2}>
-            {new Date(person.updatedAt).toLocaleDateString('tr-TR')}
-            </Typography>
-        </>
-        )}
-        <Typography variant="h6">Oluşturulma Tarihi</Typography>
-        <Typography mb={2}>{new Date(person.createdAt).toLocaleDateString('tr-TR')}</Typography>
+        <Stack spacing={1}>
+          <DetailItem label="Şirket Adı" value={companyName} />
+          <Divider />
+          <DetailItem label="Yetkili Adı" value={person.fullName} />
+          <Divider />
+          <DetailItem label="Unvan" value={person.title} />
+          <Divider />
+          <DetailItem label="Telefon" value={person.phone} />
+          <Divider />
+          <DetailItem label="Email" value={person.email} />
+          {person.birthDate && (
+            <>
+              <Divider />
+              <DetailItem
+                label="Doğum Tarihi"
+                value={new Date(person.birthDate).toLocaleDateString('tr-TR')}
+              />
+            </>
+          )}
+          {person.notes && (
+            <>
+              <Divider />
+              <DetailItem label="Notlar" value={person.notes} />
+            </>
+          )}
+          {person.updatedAt && new Date(person.updatedAt).getTime() !== new Date(person.createdAt).getTime() && (
+            <>
+              <Divider />
+              <DetailItem
+                label="Güncelleme Tarihi"
+                value={new Date(person.updatedAt).toLocaleDateString('tr-TR')}
+              />
+            </>
+          )}
+          <Divider />
+          <DetailItem label="Oluşturulma Tarihi" value={new Date(person.createdAt).toLocaleDateString('tr-TR')} />
+        </Stack>
       </Paper>
 
       <Box sx={{ mt: 3 }}>

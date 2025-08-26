@@ -15,6 +15,7 @@ import {
   IconButton,
   Tooltip,
   TablePagination,
+  TextField,
   Chip,
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
@@ -55,6 +56,7 @@ const MaintenanceList: React.FC = () => {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     dispatch(fetchMaintenances());
@@ -86,6 +88,21 @@ const MaintenanceList: React.FC = () => {
     return customer?.companyName || "Bilinmiyor";
   };
 
+  // --- Burada arama mantığı eklendi ---
+  const filteredMaintenances = maintenances.filter((m) => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return true;
+    const match = (value?: string) => value?.toLowerCase().includes(term);
+    return (
+      match(getCustomerNameById(m.customerId)) ||
+      match(m.subject) ||
+      match(m.offerStatus) ||
+      match(m.contractStatus) ||
+      match(m.licenseStatus) ||
+      match(m.firmSituation)
+    );
+  });
+
   if (loading || customersLoading)
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -109,7 +126,19 @@ const MaintenanceList: React.FC = () => {
         </Button>
       </Box>
 
-      {maintenances.length === 0 ? (
+      {/* Arama alanı */}
+      <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
+        <TextField
+          label="Ara..."
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Button variant="contained" onClick={() => setSearchTerm('')}>Temizle</Button>
+      </Box>
+
+      {filteredMaintenances.length === 0 ? (
         <Alert severity="info">Henüz bakım anlaşması kaydı bulunmamaktadır.</Alert>
       ) : (
         <Paper elevation={4} sx={{ width: '100%' }}>
@@ -121,7 +150,7 @@ const MaintenanceList: React.FC = () => {
                   <TableCell sx={{ fontWeight: 'bold' }}>Konu</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Başlangıç Tarihi</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Bitiş Tarihi</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Uzama</TableCell> {/* Yeni sütun */}
+                  <TableCell sx={{ fontWeight: 'bold' }}>Uzama</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Teklif Durumu</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Sözleşme Durumu</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Lisans Durumu</TableCell>
@@ -130,7 +159,7 @@ const MaintenanceList: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {maintenances
+                {filteredMaintenances
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((maintenance, index) => (
                     <TableRow
@@ -142,8 +171,6 @@ const MaintenanceList: React.FC = () => {
                       <TableCell>{maintenance.subject || getCustomerNameById(maintenance.customerId)}</TableCell>
                       <TableCell>{maintenance.startDate?.split('T')[0] || '-'}</TableCell>
                       <TableCell>{maintenance.endDate?.split('T')[0] || '-'}</TableCell>
-
-                      {/* Uzama sütunu */}
                       <TableCell>
                         <Chip
                           label={maintenance.extendBy6Months ? '6 Ay' : maintenance.extendBy1Year ? '1 Yıl' : '-'}
@@ -151,7 +178,6 @@ const MaintenanceList: React.FC = () => {
                           color={maintenance.extendBy6Months ? 'info' : maintenance.extendBy1Year ? 'success' : 'default'}
                         />
                       </TableCell>
-
                       <TableCell>
                         <Chip
                           label={maintenance.offerStatus}
@@ -206,7 +232,7 @@ const MaintenanceList: React.FC = () => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
             component="div"
-            count={maintenances.length}
+            count={filteredMaintenances.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

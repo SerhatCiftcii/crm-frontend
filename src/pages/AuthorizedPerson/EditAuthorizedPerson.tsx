@@ -63,7 +63,7 @@ const EditAuthorizedPerson: React.FC = () => {
       ...prev,
       [name]:
         name === 'customerId'
-          ? Number(value) // customerId kesin number olmalı
+          ? Number(value) 
           : value,
     }));
   };
@@ -71,7 +71,7 @@ const EditAuthorizedPerson: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // backend boş tarih yerine undefined bekliyor
+   
     const payload: UpdateAuthorizedPersonDto = {
       ...form,
       birthDate: form.birthDate || undefined,

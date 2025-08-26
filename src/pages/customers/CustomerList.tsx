@@ -17,6 +17,7 @@ import {
   Tooltip,
   TablePagination,
   Chip,
+  TextField,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -43,6 +44,7 @@ const CustomerList: React.FC = () => {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     dispatch(fetchCustomers());
@@ -50,7 +52,6 @@ const CustomerList: React.FC = () => {
 
   const handleDelete = (id: number) => {
     if (window.confirm('Müşteriyi silmek istediğinizden emin misiniz?')) {
-      // Mavi mantık: state üzerinde direkt filter ile listeden çıkar
       dispatch(deleteCustomer(id));
     }
   };
@@ -85,6 +86,25 @@ const CustomerList: React.FC = () => {
     setPage(0);
   };
 
+  // Search filter
+// Search filter
+const filteredCustomers = customers.filter((c) => {
+  const term = searchTerm.trim().toLowerCase(); // arama terimini küçült ve boşlukları temizle
+  if (!term) return true; // eğer arama boşsa tümünü göster
+  const match = (value?: string) => {
+    if (!value) return false;
+    return value.toLowerCase().includes(term); // değeri küçük harfe çevir
+  };
+  return (
+    match(c.companyName) ||
+    match(c.ownerName) ||
+    match(c.email) ||
+    match(c.phone) ||
+    match(c.city)
+  );
+});
+
+
   if (loading)
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -101,6 +121,7 @@ const CustomerList: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
+      {/* Başlık ve Butonlar */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Müşteriler</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -118,7 +139,19 @@ const CustomerList: React.FC = () => {
         </Box>
       </Box>
 
-      {customers.length === 0 ? (
+      {/* Search Box */}
+      <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
+        <TextField
+          label="Ara..."
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Button variant="contained" onClick={() => setSearchTerm('')}>Temizle</Button>
+      </Box>
+
+      {filteredCustomers.length === 0 ? (
         <Alert severity="info">Henüz müşteri kaydı bulunmamaktadır.</Alert>
       ) : (
         <Paper elevation={4} sx={{ width: '100%' }}>
@@ -133,13 +166,11 @@ const CustomerList: React.FC = () => {
                   <TableCell sx={{ fontWeight: 'bold' }}>Şehir</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Durum</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Ürünler</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
-                    İşlemler
-                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>İşlemler</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {customers
+                {filteredCustomers
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((customer, index) => (
                     <TableRow
@@ -188,7 +219,7 @@ const CustomerList: React.FC = () => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
             component="div"
-            count={customers.length}
+            count={filteredCustomers.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
