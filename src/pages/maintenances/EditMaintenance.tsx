@@ -1,3 +1,5 @@
+// src/pages/maintenances/EditMaintenance.tsx
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -14,6 +16,7 @@ import {
   Checkbox,
   Chip,
   ListItemText,
+  Grid,
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { updateMaintenance, fetchMaintenances } from '../../features/maintenance/maintenanceSlice';
@@ -58,21 +61,21 @@ const chipColorMap: Record<string | number, "default" | "success" | "warning" | 
   2: "success",
   3: "warning",
   4: "error",
-  "Hazırlanmadı": "default",
-  "Hazırlandı": "info",
-  "Gönderildi": "warning",
-  "Onaylandı": "success",
-  "Reddedildi": "error",
-  "Gönderilmedi": "default",
-  "İmzalandı": "success",
+  Hazırlanmadı: "default",
+  Hazırlandı: "info",
+  Gönderildi: "warning",
+  Onaylandı: "success",
+  Reddedildi: "error",
+  Gönderilmedi: "default",
+  İmzalandı: "success",
   "İptal Edildi": "error",
-  "Aktif": "success",
-  "Pasif": "default",
-  "Bekliyor": "warning",
+  Aktif: "success",
+  Pasif: "default",
+  Bekliyor: "warning",
   "Süresi Doldu": "error",
   "Devam Ediyor": "info",
-  "Durduruldu": "warning",
-  "Tamamlandı": "success",
+  Durduruldu: "warning",
+  Tamamlandı: "success",
 };
 
 const EditMaintenance: React.FC = () => {
@@ -182,140 +185,159 @@ const EditMaintenance: React.FC = () => {
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       <form onSubmit={handleSubmit}>
-        {/* Müşteri ve Konu Alanları */}
-        <FormControl fullWidth margin="normal" required>
-          <InputLabel>Müşteri</InputLabel>
-          <Select name="customerId" value={formData.customerId} onChange={handleSelectChange}>
-            <MenuItem value={0}><em>Seçiniz</em></MenuItem>
-            {customers.map((customer) => (
-              <MenuItem key={customer.id} value={customer.id}>{customer.companyName}</MenuItem>
+        <Grid container spacing={2} columns={24}>
+          <Grid size={24}>
+            <FormControl fullWidth required>
+              <InputLabel>Müşteri</InputLabel>
+              <Select name="customerId" value={formData.customerId} onChange={handleSelectChange}>
+                <MenuItem value={0}><em>Seçiniz</em></MenuItem>
+                {customers.map((customer) => (
+                  <MenuItem key={customer.id} value={customer.id}>{customer.companyName}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid size={24}>
+            <TextField fullWidth label="Konu" name="subject" value={formData.subject} onChange={handleChange} required />
+          </Grid>
+
+          <Grid size={24}>
+            <TextField
+              fullWidth
+              label="Açıklama"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              multiline
+              rows={4}
+              error={!!validationErrors.description}
+              helperText={validationErrors.description}
+            />
+          </Grid>
+
+          <Grid size={12}>
+            <TextField
+              fullWidth
+              label="Başlangıç Tarihi"
+              name="startDate"
+              type="date"
+              value={formData.startDate}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              required
+              error={!!validationErrors.endDate}
+            />
+          </Grid>
+
+          <Grid size={12}>
+            <TextField
+              fullWidth
+              label="Bitiş Tarihi"
+              name="endDate"
+              type="date"
+              value={formData.endDate}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              required
+              error={!!validationErrors.endDate}
+              helperText={validationErrors.endDate}
+            />
+          </Grid>
+
+          <Grid size={12}>
+            <TextField
+              fullWidth
+              label="Pasaport Oluşturma Tarihi"
+              name="passportCreatedDate"
+              type="date"
+              value={formData.passportCreatedDate}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              error={!!validationErrors.passportCreatedDate}
+              helperText={validationErrors.passportCreatedDate}
+            />
+          </Grid>
+
+                    {[
+              { field: 'offerStatus', label: 'Teklif Durumu', options: offerStatusOptions },
+              { field: 'contractStatus', label: 'Sözleşme Durumu', options: contractStatusOptions },
+              { field: 'licenseStatus', label: 'Lisans Durumu', options: licenseStatusOptions },
+              { field: 'firmSituation', label: 'Firma Durumu', options: firmSituationOptions }
+            ].map(({ field, label, options }) => (
+              <Grid size={12} key={field}>
+                <FormControl fullWidth>
+                  <InputLabel>{label}</InputLabel>
+                  <Select
+                    name={field}
+                    value={formData[field as keyof typeof formData] as number}
+                    onChange={handleSelectChange}
+                    label={label} // üstte düzgün görünmesi için
+                  >
+                    {Object.entries(options).map(([val, text]) => (
+                      <MenuItem key={val} value={parseInt(val)}>
+                        <Chip
+                          label={text}
+                          size="small"
+                          color={chipColorMap[text as string] || 'default'}
+                        />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
             ))}
-          </Select>
-        </FormControl>
 
-        <TextField fullWidth margin="normal" label="Konu" name="subject" value={formData.subject} onChange={handleChange} required />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Açıklama"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          multiline
-          rows={4}
-          error={!!validationErrors.description}
-          helperText={validationErrors.description}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Başlangıç Tarihi"
-          name="startDate"
-          type="date"
-          value={formData.startDate}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-          required
-          error={!!validationErrors.endDate}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Bitiş Tarihi"
-          name="endDate"
-          type="date"
-          value={formData.endDate}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-          required
-          error={!!validationErrors.endDate}
-          helperText={validationErrors.endDate}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Pasaport Oluşturma Tarihi"
-          name="passportCreatedDate"
-          type="date"
-          value={formData.passportCreatedDate}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-          error={!!validationErrors.passportCreatedDate}
-          helperText={validationErrors.passportCreatedDate}
-        />
+          <Grid size={24}>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>Uzama</Typography>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Chip
+                  label="6 Ay"
+                  clickable
+                  color={formData.extendBy6Months ? 'info' : 'default'}
+                  onClick={() => handleExtendChange('6Months')}
+                />
+                <Chip
+                  label="1 Yıl"
+                  clickable
+                  color={formData.extendBy1Year ? 'success' : 'default'}
+                  onClick={() => handleExtendChange('1Year')}
+                />
+              </Box>
+            </Box>
+          </Grid>
 
-        {/* Durum Seçimleri */}
-        {['offerStatus','contractStatus','licenseStatus','firmSituation'].map((field) => (
-          <FormControl fullWidth margin="normal" key={field}>
-            <InputLabel>{field.replace(/Status|Situation/g,' Durumu')}</InputLabel>
+            <Grid size={24}>
+          <FormControl fullWidth>
+            <InputLabel id="products-label">Ürünler</InputLabel>
             <Select
-              name={field}
-              value={formData[field as keyof typeof formData] as number}
-              onChange={handleSelectChange}
+              labelId="products-label"
+              name="productIds"
+              multiple
+              value={formData.productIds}
+              onChange={handleProductChange}
+              label="Ürünler" // üstte düzgün görünmesi için
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((value) => (
+                    <Chip key={value} label={products.find(p => p.id === value)?.name} />
+                  ))}
+                </Box>
+              )}
             >
-              {(() => {
-                const optionsMap: any = {
-                  offerStatus: offerStatusOptions,
-                  contractStatus: contractStatusOptions,
-                  licenseStatus: licenseStatusOptions,
-                  firmSituation: firmSituationOptions,
-                };
-                return Object.entries(optionsMap[field]).map(([val, label]) => (
-                  <MenuItem key={val} value={parseInt(val)}>
-                    <Chip label={label as string} size="small" color={chipColorMap[label as string] || 'default'} />
-                  </MenuItem>
-                ));
-              })()}
+              {products.map((product) => (
+                <MenuItem key={product.id} value={product.id}>
+                  <Checkbox checked={formData.productIds.includes(product.id)} />
+                  <ListItemText primary={product.name} />
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
-        ))}
+        </Grid>
+        </Grid>
 
-        {/* Uzama Seçimleri */}
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>Uzama</Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Chip
-              label="6 Ay"
-              clickable
-              color={formData.extendBy6Months ? 'info' : 'default'}
-              onClick={() => handleExtendChange('6Months')}
-            />
-            <Chip
-              label="1 Yıl"
-              clickable
-              color={formData.extendBy1Year ? 'success' : 'default'}
-              onClick={() => handleExtendChange('1Year')}
-            />
-          </Box>
-        </Box>
-
-        {/* Ürün Seçimi */}
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="products-label">Ürünler</InputLabel>
-          <Select
-            labelId="products-label"
-            name="productIds"
-            multiple
-            value={formData.productIds}
-            onChange={handleProductChange}
-            renderValue={(selected) => (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {selected.map((value) => (
-                  <Chip key={value} label={products.find(p => p.id === value)?.name} />
-                ))}
-              </Box>
-            )}
-          >
-            {products.map((product) => (
-              <MenuItem key={product.id} value={product.id}>
-                <Checkbox checked={formData.productIds.includes(product.id)} />
-                <ListItemText primary={product.name} />
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+        <Box sx={{ mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Button variant="contained" type="submit" disabled={loading}>Kaydet</Button>
           <Button variant="outlined" color="error" onClick={() => navigate('/maintenances')}>İptal</Button>
         </Box>

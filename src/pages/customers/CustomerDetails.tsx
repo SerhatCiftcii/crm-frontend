@@ -9,9 +9,8 @@ import {
   CircularProgress,
   Alert,
   Button,
-  List,
-  ListItem,
-  ListItemText,
+  Chip,
+  Stack,
   Divider,
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
@@ -22,6 +21,12 @@ const statusMap: { [key: number]: string } = {
   1: 'Aktif',
   2: 'Pasif',
   3: 'Beklemede',
+};
+
+const statusColorMap: { [key: number]: 'success' | 'default' | 'warning' } = {
+  1: 'success',
+  2: 'default',
+  3: 'warning',
 };
 
 const CustomerDetails: React.FC = () => {
@@ -72,67 +77,76 @@ const CustomerDetails: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Button variant="outlined" onClick={() => navigate(-1)} sx={{ mb: 3 }}>
-        Geri Dön
-      </Button>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        mt: 4,
+        mb: 4,
+        px: 2,
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{
+          p: 5,
+          width: '100%',
+          maxWidth: 900, // Daha geniş kart
+          position: 'relative',
+        }}
+      >
+        <Button
+          variant="outlined"
+          onClick={() => navigate(-1)}
+          sx={{ position: 'absolute', top: 16, right: 16 }}
+        >
+          Geri Dön
+        </Button>
 
-      <Typography variant="h4" component="h1" gutterBottom>
-        {customer.companyName} - Detaylar
-      </Typography>
+        <Typography variant="h4" component="h1" gutterBottom align="center">
+          {customer.companyName} - Detaylar
+        </Typography>
 
-      <Paper elevation={3} sx={{ p: 3 }}>
-        {/* Temel Bilgiler */}
-        <Box sx={{ mb: 4 }}>
+        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom>Temel Bilgiler</Typography>
-          <List>
-            <ListItem><ListItemText primary="Şirket Adı" secondary={customer.companyName} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Şube Adı" secondary={customer.branchName || '-'} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Yetkili Adı" secondary={customer.ownerName} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Email" secondary={customer.email} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Telefon" secondary={customer.phone || '-'} /></ListItem>
-          </List>
-        </Box>
+          <Stack spacing={1} divider={<Divider />}>
+            <Typography><strong>Şirket Adı:</strong> {customer.companyName}</Typography>
+            <Typography><strong>Şube Adı:</strong> {customer.branchName || '-'}</Typography>
+            <Typography><strong>Yetkili Adı:</strong> {customer.ownerName}</Typography>
+            <Typography><strong>Email:</strong> {customer.email}</Typography>
+            <Typography><strong>Telefon:</strong> {customer.phone || '-'}</Typography>
+          </Stack>
+        </Paper>
 
-        {/* Adres & Durum */}
-        <Box sx={{ mb: 4 }}>
+        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom>Adres & Durum</Typography>
-          <List>
-            <ListItem><ListItemText primary="Şehir" secondary={customer.city || '-'} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="İlçe" secondary={customer.district || '-'} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Adres" secondary={customer.address || '-'} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Vergi Numarası" secondary={customer.taxNumber || '-'} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Vergi Dairesi" secondary={customer.taxOffice || '-'} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Web Sitesi" secondary={customer.webSite || '-'} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Satış Tarihi" secondary={customer.salesDate ? customer.salesDate.split('T')[0] : '-'} /></ListItem>
-            <Divider />
-            <ListItem><ListItemText primary="Durum" secondary={statusMap[customer.status]} /></ListItem>
-          </List>
-        </Box>
+          <Stack spacing={1} divider={<Divider />}>
+            <Typography><strong>Şehir:</strong> {customer.city || '-'}</Typography>
+            <Typography><strong>İlçe:</strong> {customer.district || '-'}</Typography>
+            <Typography><strong>Adres:</strong> {customer.address || '-'}</Typography>
+            <Typography><strong>Vergi Numarası:</strong> {customer.taxNumber || '-'}</Typography>
+            <Typography><strong>Vergi Dairesi:</strong> {customer.taxOffice || '-'}</Typography>
+            <Typography><strong>Web Sitesi:</strong> {customer.webSite || '-'}</Typography>
+            <Typography><strong>Satış Tarihi:</strong> {customer.salesDate ? customer.salesDate.split('T')[0] : '-'}</Typography>
+            <Typography>
+              <strong>Durum:</strong>{' '}
+              <Chip label={statusMap[customer.status]} color={statusColorMap[customer.status]} size="small" />
+            </Typography>
+          </Stack>
+        </Paper>
 
-        {/* Ürünler */}
-        <Box>
+        <Paper elevation={2} sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>Ürünler</Typography>
           {customer.products && customer.products.length > 0 ? (
-            <List>
+            <Stack direction="row" flexWrap="wrap" spacing={1}>
               {customer.products.map((p) => (
-                <ListItem key={p.id}><ListItemText primary={p.name} /></ListItem>
+                <Chip key={p.id} label={p.name} />
               ))}
-            </List>
+            </Stack>
           ) : (
             <Typography>-</Typography>
           )}
-        </Box>
+        </Paper>
       </Paper>
     </Box>
   );
